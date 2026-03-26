@@ -1,0 +1,60 @@
+[project]
+name = "kr-dart-pipeline"
+version = "1.0.0"
+requires-python = ">=3.11"
+description = "ETL pipeline: extract Korean financial data (DART/KRX/SEIBRO/KFTC/FSC) into standardized parquets"
+authors = [{name = "pon00050"}]
+license = {text = "MIT"}
+readme = "README.md"
+keywords = ["dart", "krx", "kosdaq", "etl", "financial-forensics", "korea", "open-data"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "opendartreader",
+    "pykrx>=1.2.0",
+    "requests",
+    "lxml",
+    "pandas",
+    "pyarrow",
+    "tqdm",
+    "python-dotenv",
+    "typer>=0.9.0",
+    "kr-trading-calendar",
+    "kr-forensic-core",
+]
+
+[project.scripts]
+kr-dart-pipeline = "kr_dart_pipeline.cli:main"
+
+[project.urls]
+Repository = "https://github.com/pon00050/kr-dart-pipeline"
+Issues = "https://github.com/pon00050/kr-dart-pipeline/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["kr_dart_pipeline"]
+
+[tool.uv]
+compile-bytecode = false
+
+[tool.uv.sources]
+kr-trading-calendar = { path = "../kr-trading-calendar" }
+kr-forensic-core = { path = "../kr-forensic-core" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
