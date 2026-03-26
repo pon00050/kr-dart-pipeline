@@ -43,10 +43,13 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-# Ensure 02_Pipeline/ is importable regardless of working directory
-_PIPELINE_DIR = Path(__file__).parent
-if str(_PIPELINE_DIR) not in sys.path:
-    sys.path.insert(0, str(_PIPELINE_DIR))
+try:
+    from kr_forensic_core.paths import data_dir as _data_dir
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    _PROCESSED = _data_dir(repo_root=_REPO_ROOT)
+except Exception:
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    _PROCESSED = _REPO_ROOT / "01_Data" / "processed"
 
 
 class RunSummaryEntry(TypedDict):
@@ -137,7 +140,7 @@ def run_stage_dart(
     max_minutes: hard wall-clock deadline for the financials fetch loop.
     sleep: override all sleep constants (test mode).
     """
-    import extract_dart as ed
+    import kr_dart_pipeline.extract_dart as ed
 
     if sleep is not None:
         ed._apply_sleep_override(sleep)
@@ -174,7 +177,7 @@ def run_stage_dart(
         )
         # Write run summary — merge with existing if this is a resumed run
         import json
-        out = Path("01_Data/raw/run_summary.json")
+        out = _PROCESSED.parent / "raw" / "run_summary.json"
         out.parent.mkdir(parents=True, exist_ok=True)
 
         if out.exists():
@@ -210,13 +213,13 @@ def run_stage_cb_bw(
     backend: str = "pykrx",
 ) -> None:
     """Phase 2: fetch CB/BW events → price/volume → officer holdings."""
-    import extract_cb_bw as ecb
-    import extract_price_volume as epv
-    import extract_officer_holdings as eoh
+    import kr_dart_pipeline.extract_cb_bw as ecb
+    import kr_dart_pipeline.extract_price_volume as epv
+    import kr_dart_pipeline.extract_officer_holdings as eoh
 
     _sleep = sleep if sleep is not None else 0.5
 
-    import extract_corp_ticker_map as ectm
+    import kr_dart_pipeline.extract_corp_ticker_map as ectm
 
     log.info("=== Stage: cb_bw (corp_ticker_map) ===")
     ectm.build_corp_ticker_map(force=force)
@@ -230,17 +233,17 @@ def run_stage_cb_bw(
     log.info("=== Stage: cb_bw (officer holdings) ===")
     eoh.fetch_officer_holdings(force=force, sample=sample, sleep=_sleep, max_minutes=max_minutes)
 
-    import extract_major_holders as emh
+    import kr_dart_pipeline.extract_major_holders as emh
 
     log.info("=== Stage: cb_bw (major holders / 대량보유보고) ===")
     emh.fetch_major_holders(force=force, rebuild=rebuild, sample=sample, sleep=_sleep, max_minutes=max_minutes)
 
-    import extract_disclosures as edisc
+    import kr_dart_pipeline.extract_disclosures as edisc
 
     log.info("=== Stage: cb_bw (disclosures) ===")
     edisc.fetch_disclosures(force=force, sample=sample, sleep=_sleep, max_minutes=max_minutes)
 
-    import extract_seibro_repricing as eseibro
+    import kr_dart_pipeline.extract_seibro_repricing as eseibro
 
     log.info("=== Stage: cb_bw (SEIBRO repricing + exercise enrichment) ===")
     try:
@@ -251,7 +254,7 @@ def run_stage_cb_bw(
 
 def run_stage_transform(start: int, end: int, sample: int | None = None, force: bool = False, rebuild: bool = False) -> None:
     """Run transform.py to build company_financials.parquet."""
-    import transform as tr
+    import kr_dart_pipeline.transform as tr
     log.info("=== Stage: transform (%d–%d) ===", start, end)
     tr.run(start_year=start, end_year=end, sample=sample, force=force)
 
@@ -319,7 +322,7 @@ def run(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Run the kr-forensic-finance Phase 1 ETL pipeline",
+        description="Run the kr-dart-pipeline Phase 1 ETL pipeline",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

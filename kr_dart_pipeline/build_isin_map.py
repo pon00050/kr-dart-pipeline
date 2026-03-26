@@ -76,9 +76,15 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-ROOT = Path(__file__).parent.parent
-PROCESSED = ROOT / "01_Data" / "processed"
-CACHE_DIR = ROOT / "01_Data" / "raw" / "fsc" / "bond_isins"
+try:
+    from kr_forensic_core.paths import data_dir as _data_dir
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    PROCESSED = _data_dir(repo_root=_REPO_ROOT)
+except Exception:
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    PROCESSED = _REPO_ROOT / "01_Data" / "processed"
+RAW = PROCESSED.parent / "raw"
+CACHE_DIR = RAW / "fsc" / "bond_isins"
 
 FSC_BOND_URL = (
     "https://apis.data.go.kr/1160100/service/GetBondTradInfoService"

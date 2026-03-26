@@ -32,7 +32,7 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from _pipeline_helpers import write_json as _write_json
+from kr_dart_pipeline._pipeline_helpers import write_json as _write_json
 
 load_dotenv()
 
@@ -42,8 +42,14 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-ROOT = Path(__file__).parent.parent
-RAW_KFTC = ROOT / "01_Data" / "raw" / "kftc"
+try:
+    from kr_forensic_core.paths import data_dir as _data_dir
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    PROCESSED = _data_dir(repo_root=_REPO_ROOT)
+except Exception:
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    PROCESSED = _REPO_ROOT / "01_Data" / "processed"
+RAW_KFTC = PROCESSED.parent / "raw" / "kftc"
 
 KFTC_PORTAL = "https://egroup.go.kr"
 KFTC_API = "https://egroup.go.kr/api"  # OpenAPI base — verify endpoint at portal

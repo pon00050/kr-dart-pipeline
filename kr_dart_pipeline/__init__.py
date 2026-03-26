@@ -10,17 +10,7 @@ Usage:
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-# Add this package directory to sys.path so that the flat-layout
-# pipeline scripts can import each other via bare module names
-# (e.g., `import extract_dart as ed` within pipeline.py).
-_PKG_DIR = str(Path(__file__).parent)
-if _PKG_DIR not in sys.path:
-    sys.path.insert(0, _PKG_DIR)
-
-from kr_dart_pipeline._entry import run  # noqa: E402, F401
+from kr_dart_pipeline._entry import run  # noqa: F401
 
 __version__ = "1.0.0"
 __all__ = ["run"]

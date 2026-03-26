@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
-from _pipeline_helpers import parse_amount as _parse_amount
+from kr_dart_pipeline._pipeline_helpers import parse_amount as _parse_amount
 
 logging.basicConfig(
     level=logging.INFO,
@@ -646,7 +646,7 @@ def _upload_to_r2(local_path: Path, r2_key: str) -> None:
     fs = _r2_fs()
     if fs is None:
         return
-    bucket = os.getenv("R2_BUCKET", "kr-forensic-finance")
+    bucket = os.getenv("R2_BUCKET", "krff-shell")
     dest = f"{bucket}/{r2_key}"
     fs.put(str(local_path), dest)
     log.info("Uploaded to R2: s3://%s", dest)

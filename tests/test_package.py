@@ -51,9 +51,7 @@ def test_all_pipeline_scripts_present():
 
 def test_pipeline_module_importable():
     """pipeline.py must be importable (the orchestrator)."""
-    # pipeline.py adds its own dir to sys.path via _PIPELINE_DIR trick
-    import kr_dart_pipeline  # noqa: F401 (side effect: adds pkg dir to sys.path)
-    pipeline = importlib.import_module("pipeline")
+    pipeline = importlib.import_module("kr_dart_pipeline.pipeline")
     assert hasattr(pipeline, "run")
 
 

@@ -29,8 +29,14 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-ROOT = Path(__file__).parent.parent
-RAW_KRX = ROOT / "01_Data" / "raw" / "krx"
+try:
+    from kr_forensic_core.paths import data_dir as _data_dir
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    PROCESSED = _data_dir(repo_root=_REPO_ROOT)
+except Exception:
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    PROCESSED = _REPO_ROOT / "01_Data" / "processed"
+RAW_KRX = PROCESSED.parent / "raw" / "krx"
 
 
 def _retry(fn, *args, retries: int = 3, delay: float = 2.0, **kwargs) -> pd.DataFrame:

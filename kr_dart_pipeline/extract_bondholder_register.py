@@ -32,7 +32,7 @@ import pandas as pd
 import requests
 from dotenv import load_dotenv
 
-from _pipeline_helpers import (
+from kr_dart_pipeline._pipeline_helpers import (
     DART_HTML_HEADERS,
     _dart_api_key,
     _detect_unit_multiplier,
@@ -51,9 +51,14 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-ROOT = Path(__file__).parent.parent
-PROCESSED = ROOT / "01_Data" / "processed"
-RAW_DIR = ROOT / "01_Data" / "raw" / "dart" / "bondholder_register"
+try:
+    from kr_forensic_core.paths import data_dir as _data_dir
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    PROCESSED = _data_dir(repo_root=_REPO_ROOT)
+except Exception:
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    PROCESSED = _REPO_ROOT / "01_Data" / "processed"
+RAW_DIR = PROCESSED.parent / "raw" / "dart" / "bondholder_register"
 
 SLEEP_DEFAULT = 0.5
 

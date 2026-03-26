@@ -45,9 +45,14 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-ROOT = Path(__file__).parent.parent
-RAW = ROOT / "01_Data" / "raw"
-PROCESSED = ROOT / "01_Data" / "processed"
+try:
+    from kr_forensic_core.paths import data_dir as _data_dir
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    PROCESSED = _data_dir(repo_root=_REPO_ROOT)
+except Exception:
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    PROCESSED = _REPO_ROOT / "01_Data" / "processed"
+RAW = PROCESSED.parent / "raw"
 
 WINDOW_TRADING_DAYS = 60  # trading days each side — see KI-043
 SLEEP_DEFAULT = 0.3

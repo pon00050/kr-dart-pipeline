@@ -57,7 +57,7 @@ from typing import Any
 
 import requests
 from bs4 import BeautifulSoup
-from _pipeline_helpers import write_json as _write_json
+from kr_dart_pipeline._pipeline_helpers import write_json as _write_json
 
 logging.basicConfig(
     level=logging.INFO,
