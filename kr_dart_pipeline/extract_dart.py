@@ -42,7 +42,7 @@ import OpenDartReader
 import pandas as pd
 import requests
 from dotenv import load_dotenv
-from kr_dart_pipeline._pipeline_helpers import parse_amount as _parse_amount
+from kr_dart_pipeline._pipeline_helpers import parse_amount as _parse_amount, TIMEOUTS
 load_dotenv()
 
 try:
@@ -83,8 +83,9 @@ RAW_SECTOR = RAW / "sector"
 # ---------------------------------------------------------------------------
 
 # Reference date for PyKRX KOSDAQ universe (company list).
-# Last confirmed KOSDAQ trading day of 2023. PyKRX supports historical dates.
-KOSDAQ_REF_DATE = "20231229"
+# Defaults to last day of previous year; override via KOSDAQ_REF_DATE env var.
+import datetime as _dt
+KOSDAQ_REF_DATE = os.getenv("KOSDAQ_REF_DATE", f"{_dt.date.today().year - 1}1229")
 
 # WICS industry group codes and Korean names (25 groups).
 # Confirmed live Feb 2026. Source: WISEindex WICS taxonomy.
@@ -141,9 +142,9 @@ WICS_HEADERS = {
     "X-Requested-With": "XMLHttpRequest",
 }
 
-SLEEP_FINANCIALS = 0.5   # seconds between finstate_all calls
-SLEEP_KSIC = 0.3         # seconds between dart.company() calls
-SLEEP_WICS = 1.0         # seconds between WICS API calls
+SLEEP_FINANCIALS: float = float(os.getenv("SLEEP_FINANCIALS", "0.5"))  # seconds between finstate_all calls
+SLEEP_KSIC: float = float(os.getenv("SLEEP_KSIC", "0.3"))              # seconds between dart.company() calls
+SLEEP_WICS: float = float(os.getenv("SLEEP_WICS", "1.0"))              # seconds between WICS API calls
 
 # Module-level overrides — set via _apply_sleep_override() when --sleep is passed
 _sleep_financials = SLEEP_FINANCIALS
@@ -179,7 +180,7 @@ def _find_wics_snapshot_date() -> str:
                 "https://www.wiseindex.com/Index/GetIndexComponets"
                 f"?ceil_yn=0&dt={dt}&sec_cd=G4510",
                 headers=WICS_HEADERS,
-                timeout=10,
+                timeout=TIMEOUTS["wics"],
             )
             if resp.status_code == 200 and resp.json().get("info", {}).get("CNT", 0) > 0:
                 log.debug("WICS snapshot date resolved: %s", dt)
@@ -203,7 +204,7 @@ def _last_trading_day_of_year(year: int) -> str:
                 "https://www.wiseindex.com/Index/GetIndexComponets"
                 f"?ceil_yn=0&dt={dt}&sec_cd=G4510",
                 headers=WICS_HEADERS,
-                timeout=10,
+                timeout=TIMEOUTS["wics"],
             )
             if resp.status_code == 200 and resp.json().get("info", {}).get("CNT", 0) > 0:
                 result = dt
@@ -529,7 +530,7 @@ def fetch_wics(snapshot_date: str | None = None, force: bool = False, rebuild: b
             f"?ceil_yn=0&dt={snapshot_date}&sec_cd={group_code}"
         )
         try:
-            resp = requests.get(url, headers=WICS_HEADERS, timeout=15)
+            resp = requests.get(url, headers=WICS_HEADERS, timeout=TIMEOUTS["wics"])
             if resp.status_code != 200:
                 raise ValueError(f"HTTP {resp.status_code}")
             companies_in_group = resp.json().get("list", [])

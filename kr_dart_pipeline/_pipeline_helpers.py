@@ -24,6 +24,29 @@ DART_STATUS_OK = "000"
 DART_STATUS_NOT_FOUND = "013"
 DART_STATUS_RATE_LIMIT = "020"
 
+# ─── HTTP timeouts (seconds) — override via env vars in test/staging ──────────
+TIMEOUTS: dict[str, int] = {
+    "dart":        int(os.getenv("TIMEOUT_DART",   "30")),
+    "seibro":      int(os.getenv("TIMEOUT_SEIBRO", "15")),
+    "krx":         int(os.getenv("TIMEOUT_KRX",    "10")),
+    "kftc":        int(os.getenv("TIMEOUT_KFTC",   "20")),
+    "wics":        int(os.getenv("TIMEOUT_WICS",   "15")),
+}
+
+# ─── Inter-request delays (seconds) — override via env vars ───────────────────
+DELAYS: dict[str, float] = {
+    "krx_ticker":   float(os.getenv("DELAY_KRX_TICKER",   "0.05")),
+    "krx_ohlcv":    float(os.getenv("DELAY_KRX_OHLCV",    "0.3")),
+    "krx_short":    float(os.getenv("DELAY_KRX_SHORT",     "0.5")),
+    "seibro":       float(os.getenv("DELAY_SEIBRO",        "1.0")),
+    "seibro_retry": float(os.getenv("DELAY_SEIBRO_RETRY",  "2.0")),
+    "kftc":         float(os.getenv("DELAY_KFTC",          "1.0")),
+    "kftc_retry":   float(os.getenv("DELAY_KFTC_RETRY",    "3.0")),
+}
+
+# ─── Retry count for transient HTTP errors ────────────────────────────────────
+MAX_RETRIES: int = int(os.getenv("MAX_HTTP_RETRIES", "3"))
+
 
 def _dart_api_key() -> str:
     """Retrieve and validate DART_API_KEY from environment."""
@@ -85,7 +108,7 @@ def fetch_with_backoff(
             log.warning("DART rate limit — retrying in %.0fs (attempt %d/%d)", delay, attempt, max_retries)
             time.sleep(delay)
         try:
-            resp = requests.get(url, params=params, timeout=30)
+            resp = requests.get(url, params=params, timeout=TIMEOUTS["dart"])
             data = resp.json()
             if str(data.get("status", "")) == DART_STATUS_RATE_LIMIT:
                 raise Exception("Error 020 rate limit")

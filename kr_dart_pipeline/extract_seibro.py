@@ -57,7 +57,7 @@ from typing import Any
 
 import requests
 from bs4 import BeautifulSoup
-from kr_dart_pipeline._pipeline_helpers import write_json as _write_json
+from kr_dart_pipeline._pipeline_helpers import write_json as _write_json, TIMEOUTS, DELAYS, MAX_RETRIES
 
 logging.basicConfig(
     level=logging.INFO,
@@ -85,35 +85,37 @@ SESSION = requests.Session()
 SESSION.headers.update(HEADERS)
 
 
-def _get(url: str, params: dict | None = None, timeout: int = 15) -> requests.Response:
+def _get(url: str, params: dict | None = None, timeout: int | None = None) -> requests.Response:
     """GET with retry and rate limit."""
-    for attempt in range(1, 4):
+    _timeout = timeout if timeout is not None else TIMEOUTS["seibro"]
+    for attempt in range(1, MAX_RETRIES + 1):
         try:
-            resp = SESSION.get(url, params=params, timeout=timeout)
+            resp = SESSION.get(url, params=params, timeout=_timeout)
             resp.raise_for_status()
-            time.sleep(1.0)  # SEIBRO rate limit
+            time.sleep(DELAYS["seibro"])
             return resp
         except requests.RequestException as exc:
-            if attempt == 3:
+            if attempt == MAX_RETRIES:
                 raise
             log.warning("GET attempt %d failed: %s — retrying", attempt, exc)
-            time.sleep(2.0)
+            time.sleep(DELAYS["seibro_retry"])
     raise RuntimeError("Unreachable")
 
 
-def _post(url: str, data: dict, timeout: int = 15) -> requests.Response:
+def _post(url: str, data: dict, timeout: int | None = None) -> requests.Response:
     """POST with retry and rate limit."""
-    for attempt in range(1, 4):
+    _timeout = timeout if timeout is not None else TIMEOUTS["seibro"]
+    for attempt in range(1, MAX_RETRIES + 1):
         try:
-            resp = SESSION.post(url, data=data, timeout=timeout)
+            resp = SESSION.post(url, data=data, timeout=_timeout)
             resp.raise_for_status()
-            time.sleep(1.0)
+            time.sleep(DELAYS["seibro"])
             return resp
         except requests.RequestException as exc:
-            if attempt == 3:
+            if attempt == MAX_RETRIES:
                 raise
             log.warning("POST attempt %d failed: %s — retrying", attempt, exc)
-            time.sleep(2.0)
+            time.sleep(DELAYS["seibro_retry"])
     raise RuntimeError("Unreachable")
 
 

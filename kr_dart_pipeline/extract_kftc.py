@@ -32,7 +32,7 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from kr_dart_pipeline._pipeline_helpers import write_json as _write_json
+from kr_dart_pipeline._pipeline_helpers import write_json as _write_json, TIMEOUTS, DELAYS, MAX_RETRIES
 
 load_dotenv()
 
@@ -66,18 +66,19 @@ SESSION = requests.Session()
 SESSION.headers.update(HEADERS)
 
 
-def _get(url: str, params: dict | None = None, timeout: int = 20) -> requests.Response:
-    for attempt in range(1, 4):
+def _get(url: str, params: dict | None = None, timeout: int | None = None) -> requests.Response:
+    _timeout = timeout if timeout is not None else TIMEOUTS["kftc"]
+    for attempt in range(1, MAX_RETRIES + 1):
         try:
-            resp = SESSION.get(url, params=params, timeout=timeout)
+            resp = SESSION.get(url, params=params, timeout=_timeout)
             resp.raise_for_status()
-            time.sleep(1.0)
+            time.sleep(DELAYS["kftc"])
             return resp
         except requests.RequestException as exc:
-            if attempt == 3:
+            if attempt == MAX_RETRIES:
                 raise
             log.warning("GET attempt %d failed: %s", attempt, exc)
-            time.sleep(3.0)
+            time.sleep(DELAYS["kftc_retry"])
     raise RuntimeError("Unreachable")
 
 

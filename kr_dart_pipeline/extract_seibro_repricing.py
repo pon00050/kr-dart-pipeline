@@ -48,6 +48,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 from dotenv import load_dotenv
+from kr_dart_pipeline._pipeline_helpers import TIMEOUTS, DELAYS, MAX_RETRIES
 
 load_dotenv()
 
@@ -72,8 +73,7 @@ REPRICING_SVC = f"{SEIBRO_BASE}/StockSvc/getXrcStkOptionXrcInfoN1"
 # getXrcStkStatInfoN1: CB/BW bond details (exercise price, exercise ratio, terms)
 EXERCISE_SVC = f"{SEIBRO_BASE}/StockSvc/getXrcStkStatInfoN1"
 
-SLEEP_DEFAULT = 1.0  # SEIBRO is more restrictive than DART
-MAX_RETRIES = 3
+# Rate limit delay — SEIBRO is more restrictive than DART; use DELAYS["seibro"]
 
 
 def _seibro_api_key() -> str:
@@ -100,7 +100,7 @@ def _fetch_xml(url: str, params: dict) -> ET.Element | None:
     """GET request returning parsed XML root, with retry on transient errors."""
     for attempt in range(MAX_RETRIES):
         try:
-            resp = requests.get(url, params=params, timeout=30)
+            resp = requests.get(url, params=params, timeout=TIMEOUTS["seibro"])
             resp.raise_for_status()
             root = ET.fromstring(resp.content)
             # Check SEIBRO result code
@@ -354,7 +354,7 @@ def enrich_cb_bw_parquet(
     force: bool = False,
     rebuild: bool = False,
     sample: int | None = None,
-    sleep: float = SLEEP_DEFAULT,
+    sleep: float = DELAYS["seibro"],
     dry_run: bool = False,
 ) -> pd.DataFrame:
     """
@@ -506,8 +506,8 @@ def main() -> None:
         help="Limit to first N corp_codes (for testing)",
     )
     parser.add_argument(
-        "--sleep", type=float, default=SLEEP_DEFAULT,
-        help=f"Seconds between API calls (default: {SLEEP_DEFAULT})",
+        "--sleep", type=float, default=DELAYS["seibro"],
+        help=f"Seconds between API calls (default: {DELAYS["seibro"]})",
     )
     parser.add_argument(
         "--dry-run", action="store_true",

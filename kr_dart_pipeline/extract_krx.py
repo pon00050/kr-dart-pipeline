@@ -29,6 +29,8 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+from kr_dart_pipeline._pipeline_helpers import DELAYS
+
 try:
     from kr_forensic_core.paths import data_dir as _data_dir
     _REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -66,7 +68,7 @@ def fetch_listed_companies(market: str = "KOSDAQ") -> pd.DataFrame:
         try:
             name = krx.get_market_ticker_name(ticker)
             rows.append({"ticker": ticker, "corp_name": name, "market": market})
-            time.sleep(0.05)
+            time.sleep(DELAYS["krx_ticker"])
         except Exception as exc:
             log.warning("Ticker name fetch failed %s: %s", ticker, exc)
 
@@ -174,9 +176,9 @@ def run(
     for i, tkr in enumerate(tickers, 1):
         log.info("[%d/%d] %s OHLCV + short", i, total, tkr)
         fetch_ohlcv(tkr, start_date, end_date)
-        time.sleep(0.3)
+        time.sleep(DELAYS["krx_ohlcv"])
         fetch_short_balance(tkr, start_date, end_date)
-        time.sleep(0.5)
+        time.sleep(DELAYS["krx_short"])
 
 
 if __name__ == "__main__":

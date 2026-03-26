@@ -46,8 +46,8 @@ packages = ["kr_dart_pipeline"]
 compile-bytecode = false
 
 [tool.uv.sources]
-kr-trading-calendar = { path = "../kr-trading-calendar" }
-kr-forensic-core = { path = "../kr-forensic-core" }
+kr-trading-calendar = { path = "../kr-trading-calendar", editable = true }
+kr-forensic-core = { path = "../kr-forensic-core", editable = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
