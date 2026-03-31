@@ -481,8 +481,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "kr-forensic-core", directory = "../kr-forensic-core" },
-    { name = "kr-trading-calendar", directory = "../kr-trading-calendar" },
+    { name = "kr-forensic-core", editable = "../kr-forensic-core" },
+    { name = "kr-trading-calendar", editable = "../kr-trading-calendar" },
     { name = "lxml" },
     { name = "opendartreader" },
     { name = "pandas" },
@@ -500,7 +500,7 @@ dev = [{ name = "pytest", specifier = ">=9.0.2" }]
 [[package]]
 name = "kr-forensic-core"
 version = "1.0.0"
-source = { directory = "../kr-forensic-core" }
+source = { editable = "../kr-forensic-core" }
 
 [package.metadata]
 
@@ -510,7 +510,7 @@ dev = [{ name = "pytest", specifier = ">=9.0.2" }]
 [[package]]
 name = "kr-trading-calendar"
 version = "0.1.0"
-source = { directory = "../kr-trading-calendar" }
+source = { editable = "../kr-trading-calendar" }
 dependencies = [
     { name = "exchange-calendars" },
     { name = "pandas" },

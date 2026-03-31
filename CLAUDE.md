@@ -17,6 +17,7 @@ Package root: `kr_dart_pipeline/`
 - `_pipeline_helpers.py` — `fetch_with_backoff()`, `parse_amount()`, `_parse_krw()`, `_detect_unit_multiplier()`.
 - `cli.py` — `uv run krff-pipeline run` entry point.
 - `build_isin_map.py` — Builds `bond_isin_map.parquet` from FSC bond data.
+- `_entry.py` — Public entry point re-exported by `__init__.py` as `kr_dart_pipeline.run()`. Delegates to `pipeline.run()` via `importlib.import_module("pipeline")`. **Note:** uses bare module name; see Known Gaps.
 
 Data output path: resolved by `kr_forensic_core.paths.data_dir()` — defaults to `01_Data/processed/` relative to the repo root.
 
@@ -38,3 +39,4 @@ Data output path: resolved by `kr_forensic_core.paths.data_dir()` — defaults t
 |-----|-----|--------|
 | SEIBRO extractors not functional | 공공데이터포털 revising StockSvc API; `resultCode=99` — see XB-002 | Blocked — ETA end of April 2026 |
 | No integration test for full `pipeline.run_all()` | Requires live DART API keys in CI | Deferred |
+| `_entry.py` uses bare `importlib.import_module("pipeline")` | Should be `kr_dart_pipeline.pipeline` after sys.path removal in March 2026; may fail if called directly | Unblocked — fix import string |
