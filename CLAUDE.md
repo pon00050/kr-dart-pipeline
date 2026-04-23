@@ -40,3 +40,8 @@ Data output path: resolved by `kr_forensic_core.paths.data_dir()` — defaults t
 | SEIBRO extractors not functional | 공공데이터포털 revising StockSvc API; `resultCode=99` — see XB-002 | Blocked — ETA end of April 2026 |
 | No integration test for full `pipeline.run_all()` | Requires live DART API keys in CI | Deferred |
 | `_entry.py` bare importlib call | Fixed 2026-03-31: `"pipeline"` → `"kr_dart_pipeline.pipeline"` | Resolved |
+
+
+---
+
+**Domain knowledge** (regulatory analysis, buyer research, competitive intelligence, legal compliance) belongs in the hub vault: `forensic-accounting-toolkit/knowledge/`. Engineering docs (API patterns, test strategies, run logs) stay here. After creating a new domain knowledge note, copy it to the hub with gold-standard frontmatter. See hub `CLAUDE.md` §Knowledge Vault for the frontmatter contract.

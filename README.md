@@ -1,5 +1,7 @@
 # kr-dart-pipeline
 
+**[Read the full write-up →](https://ronanwrites.vercel.app/manuals/forensic-platform-architecture)**
+
 ETL pipeline for Korean financial data — DART, KRX, SEIBRO, KFTC, and FSC → standardized parquets.
 
 Part of the [forensic accounting toolkit](https://github.com/pon00050/forensic-accounting-toolkit) ecosystem.
@@ -27,7 +29,7 @@ run(market="KOSDAQ", start=2019, end=2023)
 ## Install
 
 ```bash
-pip install kr-dart-pipeline
+uv add git+https://github.com/pon00050/kr-dart-pipeline
 ```
 
 ## Outputs
